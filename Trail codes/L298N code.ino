@@ -18,83 +18,72 @@ void setup() {
   pinMode(IN3, OUTPUT);
   pinMode(IN4, OUTPUT);
 
-  analogWrite(ENA, 200);  // Set speed
+  analogWrite(ENA, 200);  // Set motor speeds
   analogWrite(ENB, 200);
 
-  Serial.println("Send L, R or B");
+  Serial.println("Send L (left), R (right), B (both)");
 }
 
 void loop() {
   if (Serial.available()) {
     char cmd = Serial.read();
 
-    if (cmd == 'L') {
-      Serial.println("Testing LEFT motor...");
-      testLeftMotor();
-    }
-
-    if (cmd == 'R') {
-      Serial.println("Testing RIGHT motor...");
-      testRightMotor();
-    }
-
-    if (cmd == 'B') {
-      Serial.println("Testing BOTH motors...");
-      testBothMotors();
-    }
+    if (cmd == 'L') testLeftMotor();
+    if (cmd == 'R') testRightMotor();
+    if (cmd == 'B') testBothMotors();
   }
 }
 
 // ------------ MOTOR TEST FUNCTIONS ------------
 
 void testRightMotor() {
-  // Forward
+  Serial.println("Right Motor Forward");
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
   delay(2000);
 
-  // Reverse
+  Serial.println("Right Motor Reverse");
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, HIGH);
   delay(2000);
 
-  // Stop
+  Serial.println("Right Motor Stop");
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, LOW);
 }
 
 void testLeftMotor() {
-  // Forward
+  Serial.println("Left Motor Forward");
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
   delay(2000);
 
-  // Reverse
+  Serial.println("Left Motor Reverse");
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, HIGH);
   delay(2000);
 
-  // Stop
+  Serial.println("Left Motor Stop");
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, LOW);
 }
 
 void testBothMotors() {
-  // Forward
+  Serial.println("Both Forward");
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
   delay(2000);
 
-  // Reverse
+  Serial.println("Both Reverse");
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, HIGH);
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, HIGH);
   delay(2000);
 
-  // Stop
+  Serial.println("Both Stop");
   digitalWrite(IN1, LOW);
   digitalWrite(IN2, LOW);
   digitalWrite(IN3, LOW);
