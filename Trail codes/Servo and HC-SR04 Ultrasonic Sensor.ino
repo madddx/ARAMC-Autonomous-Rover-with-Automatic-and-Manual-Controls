@@ -36,15 +36,15 @@ void loop() {
 // ---- TILT SCAN (faster) ---- //
 void tiltScan(int pAngle) {
 
-  // Up (0° → 50°)
-  for (int t = 0; t <= 50; t++) {
+  // Up (0° → 45°)
+  for (int t = 0; t <= 45; t++) {
     tilt.write(t);
     sendUltrasonic(pAngle, t);
     delay(20);   // control tilt speed
   }
 
-  // Down (50° → 0°)
-  for (int t = 50; t >= 0; t--) {
+  // Down (45° → 0°)
+  for (int t = 45; t >= 0; t--) {
     tilt.write(t);
     sendUltrasonic(pAngle, t);
     delay(20);
