@@ -13,47 +13,60 @@ const char* password = "12345678";
 #define IN2 D2
 #define IN3 D3
 #define IN4 D4
+#define ENA D7
+#define ENB D8
 
-// ================= SERVO PINS ==============
-#define PAN_SERVO  D5   // LEFT ↔ RIGHT
-#define TILT_SERVO D6   // UP ↕ DOWN
+// ================= SERVO ===================
+#define PAN_SERVO D5
 
-// ================= SERVO LIMITS ============
-#define PAN_MIN   15
-#define PAN_MAX   155
-#define TILT_MIN  60
-#define TILT_MAX  120
+#define PAN_MIN 15
+#define PAN_MAX 155
+#define PAN_CENTER 85
 
-#define PAN_CENTER  ((PAN_MIN + PAN_MAX) / 2)   // 85
-#define TILT_CENTER ((TILT_MIN + TILT_MAX) / 2) // 90
+Servo panServo;
 
-Servo panServo, tiltServo;
-
-// ================= SMOOTH SERVO ============
-int panCurrent = PAN_CENTER, panTarget = PAN_CENTER;
-int tiltCurrent = TILT_CENTER, tiltTarget = TILT_CENTER;
-
+// ================= SERVO SMOOTH ============
+int panCurrent = PAN_CENTER;
+int panTarget  = PAN_CENTER;
 unsigned long lastMove = 0;
-const int servoDelay = 5;   // smaller = smoother
+const int servoDelay = 5;
+
+// ================= SPEED ===================
+#define SPEED_MIN 70
+#define SPEED_MAX 255
+int speedValue = 150;
 
 // ================= MOTOR ===================
+void applySpeed() {
+  analogWrite(ENA, speedValue);
+  analogWrite(ENB, speedValue);
+}
+
 void stopMotors() {
   digitalWrite(IN1, LOW); digitalWrite(IN2, LOW);
   digitalWrite(IN3, LOW); digitalWrite(IN4, LOW);
 }
+
 void forward() {
+  applySpeed();
   digitalWrite(IN1, HIGH); digitalWrite(IN2, LOW);
   digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);
 }
+
 void reverse() {
+  applySpeed();
   digitalWrite(IN1, LOW); digitalWrite(IN2, HIGH);
   digitalWrite(IN3, LOW); digitalWrite(IN4, HIGH);
 }
+
 void left() {
+  applySpeed();
   digitalWrite(IN1, HIGH); digitalWrite(IN2, LOW);
   digitalWrite(IN3, LOW);  digitalWrite(IN4, HIGH);
 }
+
 void right() {
+  applySpeed();
   digitalWrite(IN1, LOW);  digitalWrite(IN2, HIGH);
   digitalWrite(IN3, HIGH); digitalWrite(IN4, LOW);
 }
@@ -67,16 +80,7 @@ String htmlPage() {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body{background:#111;color:white;text-align:center;font-family:Arial;margin:0}
-
-iframe{
-  width:100%;
-  max-width:100%;
-  aspect-ratio: 4 / 3;   /* change to 16 / 9 if ESP32-CAM */
-  height:auto;
-  border-radius:12px;
-  border:2px solid #1abc9c;
-}
-
+iframe{width:100%;aspect-ratio:4/3;border-radius:12px;border:2px solid #1abc9c}
 .slider{width:90%}
 button{
   width:120px;height:70px;margin:8px;
@@ -88,19 +92,13 @@ button{
 
 <script>
 const PAN_CENTER = 85;
-const TILT_CENTER = 90;
-
 function send(cmd){ fetch("/" + cmd); }
 function pan(v){ fetch("/pan?val=" + v); }
-function tilt(v){ fetch("/tilt?val=" + v); }
+function speed(v){ fetch("/speed?val=" + v); }
 
 function panCenter(){
   document.getElementById("pan").value = PAN_CENTER;
   pan(PAN_CENTER);
-}
-function tiltCenter(){
-  document.getElementById("tilt").value = TILT_CENTER;
-  tilt(TILT_CENTER);
 }
 </script>
 </head>
@@ -109,35 +107,25 @@ function tiltCenter(){
 
 <h2>ESP8266 FPV TANK CAR</h2>
 
-<h3>Live Camera</h3>
 <iframe src="http://192.168.4.2/stream"></iframe>
 
-<h3>PAN (LEFT ↔ RIGHT)</h3>
+<h3>PAN CAMERA</h3>
 <input id="pan" class="slider" type="range"
 min="15" max="155" value="85"
 oninput="pan(this.value)"
 onmouseup="panCenter()" ontouchend="panCenter()">
 
-<h3>TILT (UP ↕ DOWN)</h3>
-<input id="tilt" class="slider" type="range"
-min="60" max="120" value="90"
-oninput="tilt(this.value)"
-onmouseup="tiltCenter()" ontouchend="tiltCenter()">
+<h3>SPEED</h3>
+<input class="slider" type="range"
+min="70" max="255" value="150"
+oninput="speed(this.value)">
 
 <hr>
 
-<button ontouchstart="send('F')" ontouchend="send('S')"
-onmousedown="send('F')" onmouseup="send('S')">FORWARD</button><br>
-
-<button ontouchstart="send('L')" ontouchend="send('S')"
-onmousedown="send('L')" onmouseup="send('S')">LEFT</button>
-
-<button ontouchstart="send('R')" ontouchend="send('S')"
-onmousedown="send('R')" onmouseup="send('S')">RIGHT</button><br>
-
-<button ontouchstart="send('B')" ontouchend="send('S')"
-onmousedown="send('B')" onmouseup="send('S')">REVERSE</button><br>
-
+<button ontouchstart="send('F')" ontouchend="send('S')">FORWARD</button><br>
+<button ontouchstart="send('L')" ontouchend="send('S')">LEFT</button>
+<button ontouchstart="send('R')" ontouchend="send('S')">RIGHT</button><br>
+<button ontouchstart="send('B')" ontouchend="send('S')">REVERSE</button><br>
 <button class="stop" onclick="send('S')">STOP</button>
 
 </body>
@@ -147,14 +135,15 @@ onmousedown="send('B')" onmouseup="send('S')">REVERSE</button><br>
 
 // ================= SETUP ===================
 void setup() {
+  analogWriteRange(255);     // PWM 0–255
+  analogWriteFreq(1000);    // Best for L298N
+
   pinMode(IN1, OUTPUT); pinMode(IN2, OUTPUT);
   pinMode(IN3, OUTPUT); pinMode(IN4, OUTPUT);
+  pinMode(ENA, OUTPUT); pinMode(ENB, OUTPUT);
 
   panServo.attach(PAN_SERVO);
-  tiltServo.attach(TILT_SERVO);
-
   panServo.write(PAN_CENTER);
-  tiltServo.write(TILT_CENTER);
 
   WiFi.softAP(ssid, password);
 
@@ -174,11 +163,12 @@ void setup() {
     server.send(200,"text/plain","PAN");
   });
 
-  server.on("/tilt", [](){
+  server.on("/speed", [](){
     if(server.hasArg("val")){
-      tiltTarget = constrain(server.arg("val").toInt(), TILT_MIN, TILT_MAX);
+      speedValue = constrain(server.arg("val").toInt(), SPEED_MIN, SPEED_MAX);
+      applySpeed();
     }
-    server.send(200,"text/plain","TILT");
+    server.send(200,"text/plain","SPD");
   });
 
   server.begin();
@@ -190,14 +180,8 @@ void loop() {
 
   if(millis() - lastMove > servoDelay){
     lastMove = millis();
-
     if(panCurrent < panTarget) panCurrent++;
     else if(panCurrent > panTarget) panCurrent--;
-
-    if(tiltCurrent < tiltTarget) tiltCurrent++;
-    else if(tiltCurrent > tiltTarget) tiltCurrent--;
-
     panServo.write(panCurrent);
-    tiltServo.write(tiltCurrent);
   }
 }
