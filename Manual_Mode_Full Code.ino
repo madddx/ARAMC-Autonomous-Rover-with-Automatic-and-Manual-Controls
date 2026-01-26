@@ -19,9 +19,9 @@ const char* password = "12345678";
 // ================= SERVO ===================
 #define PAN_SERVO D5
 
-#define PAN_MIN 15
-#define PAN_MAX 155
-#define PAN_CENTER 85
+#define PAN_MIN     15
+#define PAN_MAX     155
+#define PAN_CENTER  85
 
 Servo panServo;
 
@@ -78,20 +78,57 @@ String htmlPage() {
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-body{background:#111;color:white;text-align:center;font-family:Arial;margin:0}
-iframe{width:100%;aspect-ratio:4/3;border-radius:12px;border:2px solid #1abc9c}
+body{
+  background:#111;color:white;text-align:center;
+  font-family:Arial;margin:0
+}
+
+.modeBar{
+  display:flex;
+  justify-content:space-around;
+  padding:10px;
+  background:#000;
+}
+
+.modeBtn{
+  flex:1;
+  margin:5px;
+  height:50px;
+  font-size:18px;
+  border-radius:12px;
+  border:none;
+  background:#34495e;
+  color:white;
+}
+
+.modeBtn.active{
+  background:#1abc9c;
+}
+
+iframe{
+  width:100%;
+  aspect-ratio:4/3;
+  border-radius:12px;
+  border:2px solid #1abc9c
+}
+
 .slider{width:90%}
+
 button{
   width:120px;height:70px;margin:8px;
   font-size:18px;border-radius:15px;
   border:none;background:#1abc9c
 }
+
 .stop{background:#e74c3c}
+.hidden{display:none}
 </style>
 
 <script>
 const PAN_CENTER = 85;
+
 function send(cmd){ fetch("/" + cmd); }
 function pan(v){ fetch("/pan?val=" + v); }
 function speed(v){ fetch("/speed?val=" + v); }
@@ -100,10 +137,43 @@ function panCenter(){
   document.getElementById("pan").value = PAN_CENTER;
   pan(PAN_CENTER);
 }
+
+function showMode(mode){
+  document.getElementById("manual").classList.add("hidden");
+  document.getElementById("auto").classList.add("hidden");
+  document.getElementById("park").classList.add("hidden");
+
+  document.getElementById("btnAuto").classList.remove("active");
+  document.getElementById("btnManual").classList.remove("active");
+  document.getElementById("btnPark").classList.remove("active");
+
+  document.getElementById(mode).classList.remove("hidden");
+  document.getElementById("btn"+mode.charAt(0).toUpperCase()+mode.slice(1)).classList.add("active");
+}
 </script>
 </head>
 
-<body>
+<body onload="showMode('manual')">
+
+<!-- MODE BUTTONS -->
+<div class="modeBar">
+  <button id="btnAuto" class="modeBtn" onclick="showMode('auto')">AUTO</button>
+  <button id="btnManual" class="modeBtn" onclick="showMode('manual')">MANUAL</button>
+  <button id="btnPark" class="modeBtn" onclick="showMode('park')">PARK</button>
+</div>
+
+<!-- AUTO PLACEHOLDER -->
+<div id="auto" class="hidden">
+  <h2>AUTO MODE</h2>
+</div>
+
+<!-- PARK PLACEHOLDER -->
+<div id="park" class="hidden">
+  <h2>PARK MODE</h2>
+</div>
+
+<!-- MANUAL MODE -->
+<div id="manual">
 
 <h2>ESP8266 FPV TANK CAR</h2>
 
@@ -128,6 +198,8 @@ oninput="speed(this.value)">
 <button ontouchstart="send('B')" ontouchend="send('S')">REVERSE</button><br>
 <button class="stop" onclick="send('S')">STOP</button>
 
+</div>
+
 </body>
 </html>
 )rawliteral";
@@ -135,8 +207,8 @@ oninput="speed(this.value)">
 
 // ================= SETUP ===================
 void setup() {
-  analogWriteRange(255);     // PWM 0–255
-  analogWriteFreq(1000);    // Best for L298N
+  analogWriteRange(255);
+  analogWriteFreq(1000);
 
   pinMode(IN1, OUTPUT); pinMode(IN2, OUTPUT);
   pinMode(IN3, OUTPUT); pinMode(IN4, OUTPUT);
