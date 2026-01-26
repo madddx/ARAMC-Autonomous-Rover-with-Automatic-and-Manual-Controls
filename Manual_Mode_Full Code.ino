@@ -81,13 +81,12 @@ String htmlPage() {
 
 <style>
 body{
-  background:#111;color:white;text-align:center;
-  font-family:Arial;margin:0
+  background:#111;color:white;
+  text-align:center;font-family:Arial;margin:0
 }
 
 .modeBar{
   display:flex;
-  justify-content:space-around;
   padding:10px;
   background:#000;
 }
@@ -103,9 +102,7 @@ body{
   color:white;
 }
 
-.modeBtn.active{
-  background:#1abc9c;
-}
+.modeBtn.active{background:#1abc9c}
 
 iframe{
   width:100%;
@@ -139,14 +136,10 @@ function panCenter(){
 }
 
 function showMode(mode){
-  document.getElementById("manual").classList.add("hidden");
-  document.getElementById("auto").classList.add("hidden");
-  document.getElementById("park").classList.add("hidden");
-
-  document.getElementById("btnAuto").classList.remove("active");
-  document.getElementById("btnManual").classList.remove("active");
-  document.getElementById("btnPark").classList.remove("active");
-
+  ["manual","auto","park"].forEach(m=>{
+    document.getElementById(m).classList.add("hidden");
+    document.getElementById("btn"+m.charAt(0).toUpperCase()+m.slice(1)).classList.remove("active");
+  });
   document.getElementById(mode).classList.remove("hidden");
   document.getElementById("btn"+mode.charAt(0).toUpperCase()+mode.slice(1)).classList.add("active");
 }
@@ -162,20 +155,19 @@ function showMode(mode){
   <button id="btnPark" class="modeBtn" onclick="showMode('park')">PARK</button>
 </div>
 
-<!-- AUTO PLACEHOLDER -->
+<!-- AUTO MODE (CAMERA ONLY) -->
 <div id="auto" class="hidden">
-  <h2>AUTO MODE</h2>
+  <iframe src="http://192.168.4.2/stream"></iframe>
 </div>
 
-<!-- PARK PLACEHOLDER -->
+<!-- PARK MODE (CAMERA ONLY) -->
 <div id="park" class="hidden">
-  <h2>PARK MODE</h2>
+  <iframe src="http://192.168.4.2/stream"></iframe>
 </div>
 
-<!-- MANUAL MODE -->
+<!-- MANUAL MODE (FULL CONTROL) -->
 <div id="manual">
 
-<h2>ESP8266 FPV TANK CAR</h2>
 
 <iframe src="http://192.168.4.2/stream"></iframe>
 
