@@ -1,7 +1,6 @@
 # ARAMC – Autonomous Rover with Automatic and Manual Controls
 
 The **ARAMC Autonomous Rover** is a hybrid robotic system capable of operating in both **manual** and **fully autonomous** modes. 
-
 This repository contains all source code, experimental trial programs, test scripts, and wiring references used throughout the development of the rover.
 
 ## 🚗 Project Overview
